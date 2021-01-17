@@ -1,0 +1,65 @@
+openapi: '3.0.2'
+info:
+  title: API Title
+  version: '1.0'
+components:
+  schemas:
+    error:
+      type: object
+      properties:
+        message:
+          type: string
+
+paths:
+  /:
+    get:
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: integer
+          required: true
+          description: Fibonacci numbers range start number. Must be from 0 to 255 and less or equal than "to" parameter
+        - in: query
+          name: to
+          schema:
+            type: integer
+          required: true
+          description: Fibonacci numbers range end number. Must be from 0 to 255 and bigger or equal than "from" parameter
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                type: object
+                required:
+                  - "list"
+                description: list of fibonacci numbers
+                properties:
+                  list:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - "n"
+                      - "value"
+                      properties:
+                        n:
+                          type: integer
+                          description: serial number of fibonacci number
+                        value:
+                          type: string
+                          description: fibonacci number
+        '400':
+          description: Bad request
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal server error
+          content:
+            "application/json":
+              schema:
+                $ref: '#/components/schemas/error'
