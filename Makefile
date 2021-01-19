@@ -1,6 +1,6 @@
 .PHONY:build
 build:
-	go build -o bin/fiboser cmd/main/main.go
+	go build -o bin/fiboser ./cmd/main/
 
 .PHONY:run
 run:

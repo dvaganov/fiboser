@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package fibogrpc;
+option go_package = "pkg/delivery/fibogrpc";
+
+message FibonacciRangeRequest {
+    uint32 from = 1;
+    uint32 to = 2;
+}
+
+message FibonacciRangeResponse {
+    repeated FibonacciNumber list = 1;
+}
+
+message FibonacciNumber {
+    uint32 n = 1;
+    string value = 2;
+}
+
+service Fibonacci {
+    rpc GetRange(FibonacciRangeRequest) returns (FibonacciRangeResponse);
+}
