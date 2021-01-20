@@ -2,12 +2,17 @@ package fibonacci
 
 import (
 	"context"
+	"errors"
 	"reflect"
+	"strconv"
 	"testing"
+
+	"github.com/dvaganov/fiboser/pkg/fibonacci/fibonaccimock"
+	"github.com/golang/mock/gomock"
 )
 
 func TestGetRange(t *testing.T) {
-	service := NewService()
+	service := NewService(nil)
 
 	testCases := []struct {
 		from      uint8
@@ -34,5 +39,91 @@ func TestGetRange(t *testing.T) {
 		if !reflect.DeepEqual(fSlice, tc.expectRes) {
 			t.Errorf("expect %v, got %#v", tc.expectRes, fSlice)
 		}
+	}
+}
+
+func TestGetRangeWithCache(t *testing.T) {
+	errCache := errors.New("cache error")
+
+	testCases := []struct {
+		name      string
+		from      uint8
+		to        uint8
+		cache     map[string]string
+		expectRes []string
+		expectErr error
+	}{
+		{
+			name:      "check base",
+			from:      0,
+			to:        1,
+			cache:     map[string]string{},
+			expectRes: []string{"0", "1"},
+			expectErr: nil,
+		},
+		{
+			name:      "single value",
+			from:      1,
+			to:        1,
+			cache:     map[string]string{},
+			expectRes: []string{"1"},
+			expectErr: nil,
+		},
+		{
+			name:      "range",
+			from:      2,
+			to:        8,
+			cache:     map[string]string{},
+			expectRes: []string{"1", "2", "3", "5", "8", "13", "21"},
+			expectErr: nil,
+		},
+		{
+			name:      "invalid range",
+			from:      8,
+			to:        2,
+			cache:     map[string]string{},
+			expectRes: nil,
+			expectErr: ErrInvalidRange,
+		},
+		{
+			name: "boundary value",
+			from: 251,
+			to:   255,
+			cache: map[string]string{
+				"251": "invalid",
+				"253": "33449372971981195681356806732944396691005381570580873",
+				"254": "54122222371037658776676579571233761483351206693809497",
+			},
+			expectRes: []string{"12776523572924732586037033894655031898659556447352249", "20672849399056463095319772838289364792345825123228624", "33449372971981195681356806732944396691005381570580873", "54122222371037658776676579571233761483351206693809497", "87571595343018854458033386304178158174356588264390370"},
+			expectErr: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			cacheMock := fibonaccimock.NewMockCache(ctrl)
+
+			service := NewService(cacheMock)
+
+			for i := uint32(0); i <= uint32(tc.to); i++ {
+				if val, ok := tc.cache[strconv.Itoa(int(i))]; ok {
+					cacheMock.EXPECT().Get(gomock.Any(), uint8(i)).Return(val, nil)
+					continue
+				}
+				cacheMock.EXPECT().Get(gomock.Any(), uint8(i)).Return("", errCache)
+				cacheMock.EXPECT().Save(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			}
+
+			fSlice, err := service.GetRange(context.Background(), tc.from, tc.to)
+
+			if tc.expectErr != err {
+				t.Errorf("expect %v, got %#v", tc.expectErr, err)
+			}
+
+			if !reflect.DeepEqual(fSlice, tc.expectRes) {
+				t.Errorf("expect %v, got %#v", tc.expectRes, fSlice)
+			}
+		})
 	}
 }

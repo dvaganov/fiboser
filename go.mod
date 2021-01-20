@@ -3,6 +3,7 @@ module github.com/dvaganov/fiboser
 go 1.15
 
 require (
+	github.com/go-redis/redis/v8 v8.4.9
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/google/go-cmp v0.5.4 // indirect

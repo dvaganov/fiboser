@@ -10,6 +10,11 @@ type (
 	Service interface {
 		GetRange(ctx context.Context, from, to uint8) ([]string, error)
 	}
+
+	Cache interface {
+		Get(ctx context.Context, n uint8) (string, error)
+		Save(ctx context.Context, n uint8, val string) error
+	}
 )
 
 var (

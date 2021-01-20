@@ -4,6 +4,7 @@
 ```
 -restPort       порт для REST сервера (default 8080)
 -grpcPort       порт для gRPC сервера (default 8081)
+-redisDsn       uri для подключения к redis (например, redis://localhost:6379/?db=0&password=)
 ```
 
 Для запуска сервера существуе два варианта:
