@@ -2,7 +2,7 @@
 
 Опции для запуска:
 ```
--port           порт для REST сервера (default 8080)
+-restPort       порт для REST сервера (default 8080)
 -grpcPort       порт для gRPC сервера (default 8081)
 ```
 

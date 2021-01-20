@@ -11,10 +11,6 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-const (
-	bufSize = 1024 * 1024
-)
-
 func TestGrpcGetRange(t *testing.T) {
 	ctx := context.Background()
 

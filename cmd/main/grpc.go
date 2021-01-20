@@ -13,29 +13,31 @@ import (
 type (
 	grpcServer struct {
 		fiboSrv fibogrpc.FibonacciServer
+		srv     *grpc.Server
+		lis     net.Listener
 	}
 )
 
-func (s *grpcServer) Run(ctx context.Context, port int) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+func (s *grpcServer) Run(port int) error {
+	var err error
+	s.lis, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}
 
-	grpcSrv := grpc.NewServer()
-	fibogrpc.RegisterFibonacciServer(grpcSrv, s.fiboSrv)
+	s.srv = grpc.NewServer()
+	fibogrpc.RegisterFibonacciServer(s.srv, s.fiboSrv)
 
 	go func() {
-		<-ctx.Done()
-		grpcSrv.Stop()
-		log.Println(lis.Close())
-	}()
-
-	go func() {
-		if err := grpcSrv.Serve(lis); err != grpc.ErrServerStopped {
-			log.Fatal(err)
+		if err := s.srv.Serve(s.lis); err != grpc.ErrServerStopped {
+			log.Println(err)
 		}
 	}()
 
 	return nil
+}
+
+func (s *grpcServer) Stop(ctx context.Context) error {
+	s.srv.Stop()
+	return s.lis.Close()
 }

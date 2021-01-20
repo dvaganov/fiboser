@@ -1,4 +1,4 @@
-package rest
+package fiborest
 
 import "net/http"
 
